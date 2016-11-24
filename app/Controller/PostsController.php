@@ -4,11 +4,13 @@
 //次の行でextends Appcontrollerを使うため。
 App::uses('AppController', 'Controller');
 class PostsController extends AppController {
-    public $name = 'Posts';
-    public $uses = array('Post');
-
+    //public $name = 'Posts';
+    //Post→Model名(Post.php)
+    //public $uses = array('Post', 'User');
+    //→上と同じ。PostはModel名 public $uses = ['Post', 'User'];
     // ヘルパーの利用宣言(呪文)
-    public $helpers = array('Html', 'Form');
+
+    //public $helpers = array('Html', 'Form');
 
 
       //↓記事の一覧をすべて引っ張ってくる。第一引数で指定した変数である'posts'はviewの中で使える。これがset関数
@@ -21,14 +23,17 @@ class PostsController extends AppController {
     // $options = array(
     //             'limit' => '3'
     //             );
-        $this->set('posts' ,$this->Post->find('all'
+        //ModelにあるPost.phpからデータベースにアクセスしてfindで全てのデータを配列として取ってくる。それをsugiuraに代入してsetでviewの中にあるindexに投げる
+        $this->set('sugiura' ,$this->Post->find('all'
           //,$options
           ));
     }
 
 //viewは個別記事を表示するためのアクション
     public function view($id = null) {
-        $this->Post->id = $id;
+        // var_dump($id);
+        // exit;
+        //$this->Post->id = $id;
         $this->set('post', $this->Post->findById($id));
     }
 
@@ -46,19 +51,24 @@ class PostsController extends AppController {
     }
 
     public function edit($id = null) {
-        $this->Post->id = $id;
+        //$this->Post->id = $id;
         $post = $this->Post->findById($id);
 
         if ($this->request->is('get')) {
+
             $this->request->data = $post;
         }
 
+        //set、requestで2種類の投げ方がある
+
         if ($this->request->is(array('post', 'put'))) {
             if ($this->Post->save($this->request->data)) {
-                $this->Session->setFlash('Updated!');
+                // $this->Session->setFlash('Updated!');
+                $this->Flash->success('Update');
                 $this->redirect(array('action' => 'index'));
             } else {
-                $this->Session->setFlash('Failed...');
+                // $this->Session->setFlash('Failed...');
+                $this->Flash->error('Falied');
             }
         }
 
@@ -71,10 +81,14 @@ class PostsController extends AppController {
         throw new MethodNotAllowedException();
         }
 
-        if ($this->Post->delete($id)) {
-            $this->Session->setFlash('deleted');
+        if ($this->Post->delete($id))
+//trueならば
+         {
+            $this->Flash->success('削除が成功しました');
+            // $this->Session->setFlash('deleted');
         } else {
-            $this->Session->setFlash('could not deleted');
+            $this->Flash->error('削除が失敗しました');
+            // $this->Session->setFlash('could not deleted');
         }
         $this->redirect(array('action' => 'index'));
     }
